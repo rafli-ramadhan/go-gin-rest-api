@@ -1,0 +1,16 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+.DS_Store
+*.test
+*.out
+vendor/
+*.env
+tmp/
+go.sum
+templates/
+docs
+*.swp
+*.tmp
