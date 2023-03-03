@@ -1,15 +1,16 @@
 package account
 
 import (
-	"go-rest-api/src/constant"
-	"go-rest-api/src/http"
-	"go-rest-api/src/model"
-	"go-rest-api/src/repository/v1/account"
 	"log"
 
 	"github.com/forkyid/go-utils/v1/aes"
 	"github.com/jinzhu/copier"
 	"github.com/pkg/errors"
+	"go-rest-api/src/constant"
+	"go-rest-api/src/http"
+	"go-rest-api/src/model"
+	"go-rest-api/src/pkg/bcrypt"
+	"go-rest-api/src/repository/v1/account"
 	"gorm.io/gorm"
 )
 
@@ -180,6 +181,13 @@ func (svc *Service) Create(request http.RegisterUser) (err error) {
 	} else {
 		newAccount := model.User{}
 		copier.Copy(&newAccount, &request)
+
+		hashedPassword, err := bcrypt.GeneratePasswordHarsh(newAccount.Password)
+		if err != nil {
+			err = errors.Wrap(err, "hash password")
+			return err
+		}
+		newAccount.Password = hashedPassword
 		newAccount.PhotoURL = "https://thumbs.dreamstime.com/b/user-profile-avatar-solid-black-line-icon-simple-vector-filled-flat-pictogram-isolated-white-background-134042540.jpg"
 		newAccount.Gender = "none"
 		newAccount.IsVerified = false
@@ -187,7 +195,7 @@ func (svc *Service) Create(request http.RegisterUser) (err error) {
 		err = svc.repo.Create(newAccount)
 		if err != nil {
 			err = errors.Wrap(err, "create new account")
-			return
+			return err
 		}
 	}
 	return

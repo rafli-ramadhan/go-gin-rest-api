@@ -7,6 +7,7 @@ import (
 
 	"go-rest-api/src/constant"
 	entity "go-rest-api/src/http"
+	"go-rest-api/src/pkg/bcrypt"
 	"go-rest-api/src/service/v1/account"
 	"go-rest-api/src/pkg/jwt"
 	"github.com/forkyid/go-utils/v1/aes"
@@ -63,6 +64,13 @@ func (ctrl *Controller) Login(ctx *gin.Context) {
 	account, err:= ctrl.svc.TakeAccountByUsername(request.Username)
 	if err != nil {
 		rest.ResponseMessage(ctx, http.StatusInternalServerError)
+		return
+	}
+
+	err = bcrypt.CheckPasswordHarsh(account.Password, request.Password)
+	if err != nil {
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"accounts": constant.ErrInvalidPassword.Error()})
 		return
 	}
 

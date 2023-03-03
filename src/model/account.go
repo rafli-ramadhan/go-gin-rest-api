@@ -1,8 +1,6 @@
 package model
 
 import (
-	"golang.org/x/crypto/bcrypt"
-	"github.com/forkyid/go-utils/v1/aes"
 	"go-rest-api/src/constant"
 	"gorm.io/gorm"
 	"time"
@@ -31,18 +29,4 @@ func (User) TableName() string {
 
 func (m User) DOBString() string {
 	return m.DateOfBirth.Format(constant.DOBLayout)
-}
-
-func (m User) EncID() string {
-	return aes.Encrypt(int(m.ID))
-}
-
-func (m User) GeneratePasswordHarsh() error {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(m.Password), 14)
-	m.Password = string(bytes)
-	return err
-}
-func (m User) CheckPasswordHarsh(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(m.Password), []byte(password))
-	return err == nil
 }

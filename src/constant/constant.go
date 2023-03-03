@@ -20,6 +20,7 @@ var (
 	// error	
 	ErrInvalidID               = errors.New("invalid id")
 	ErrInvalidFormat           = errors.New("invalid format")
+	ErrInvalidPassword         = errors.New("invalid password")
 	ErrAccountExist            = errors.New("user already exist")
 	ErrAccountNotRegistered    = errors.New("user not registered")
 	ErrEmailAlreadyExist       = errors.New("email already exist")

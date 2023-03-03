@@ -47,7 +47,6 @@ func (ctrl *Controller) Register(ctx *gin.Context) {
 	}
 
 	req.Username = strings.ToLower(req.Username)
-	log.Print(req)
 	err := ctrl.svc.Create(req)
 	if errors.Is(err, constant.ErrAccountExist) {
 		rest.ResponseMessage(ctx, http.StatusConflict, errors.Cause(err).Error())
@@ -131,7 +130,7 @@ func (ctrl *Controller) Update(ctx *gin.Context) {
 
 // Delete godoc
 // @Summary Delete Account
-// @Description Delete Account
+// @Description Delete Account By User Itself
 // @Tags Accounts
 // @Param Authorization header string true "Bearer Token"
 // @Param account_id query string false "account_id"
@@ -141,31 +140,23 @@ func (ctrl *Controller) Update(ctx *gin.Context) {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /v1/accounts [delete]
 func (ctrl *Controller) Delete(ctx *gin.Context) {
-	_, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
+	accountID, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
 	if err != nil {
 		rest.ResponseMessage(ctx, http.StatusUnauthorized)
 		return
 	}
 
-	// example query : a5V7Wz49nlPgbKEqVJkMQLpm3dyO6Zq2
-	log.Print(aes.Encrypt(14))
-	accountID := ctx.Query("account_id")
-	if accountID == "" {
-		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
-			"account_id": constant.ErrInvalidID.Error()})
-		return
-	} else {
-		err = ctrl.svc.Delete(aes.Decrypt(accountID))
-		if err != nil {
-			if errors.Is(err, constant.ErrAccountNotRegistered) {
-				rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
-					"accounts": constant.ErrAccountNotRegistered.Error()})
-				return
-			}
-			rest.ResponseMessage(ctx, http.StatusInternalServerError)
-			log.Println("delete account: ", err.Error())
+	err = ctrl.svc.Delete(accountID)
+	if err != nil {
+		if errors.Is(err, constant.ErrAccountNotRegistered) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrAccountNotRegistered.Error()})
 			return
 		}
-		rest.ResponseMessage(ctx, http.StatusOK)
+		rest.ResponseMessage(ctx, http.StatusInternalServerError)
+		log.Println("delete account: ", err.Error())
+		return
 	}
+		
+	rest.ResponseMessage(ctx, http.StatusOK)
 }

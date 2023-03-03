@@ -88,7 +88,12 @@ func (repo *Repository) Create(account entity.User) (err error) {
 	query := repo.dbMaster.Model(&account ).Begin().
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "username"}},
-			DoUpdates: clause.Assignments(map[string]interface{}{"deleted_at": nil})}).
+			DoUpdates: clause.Assignments(map[string]interface{}{
+				"username": account.Username,
+				"full_name": account.FullName,
+				"password": account.Password,
+				"deleted_at": nil,
+			})}).
 		Create(&account)
 	err = query.Error
 	if err != nil {
