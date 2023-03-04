@@ -117,8 +117,9 @@ func (ctrl *Controller) Create(ctx *gin.Context) {
 // @Summary Update Location
 // @Description Update Location
 // @Tags Locations
-// @Param Payload body http.UpdateLocation true "Payload"
+// @Param Authorization header string true "Bearer Token"
 // @Param location_id query string false "location_id"
+// @Param Payload body http.UpdateLocation true "Payload"
 // @Success 200 {string} string "Success"
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"

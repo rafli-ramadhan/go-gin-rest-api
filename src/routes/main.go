@@ -65,8 +65,7 @@ func RouterSetup() *gin.Engine {
 
 	// service
 	accountSvc := accountService.NewService(accountRepo)
-	locationSvc := locationService.NewService(locationRepo
-	)
+	locationSvc := locationService.NewService(locationRepo)
 	
 	// controller
 	authController := authController.NewController(accountSvc)
