@@ -13,8 +13,13 @@ import (
 
 	authController "go-rest-api/src/controller/v1/auth"
 	accountController "go-rest-api/src/controller/v1/account"
+	locationController "go-rest-api/src/controller/v1/location"
+
 	accountRepository "go-rest-api/src/repository/v1/account"
+	locationRepository "go-rest-api/src/repository/v1/location"
+
 	accountService "go-rest-api/src/service/v1/account"
+	locationService "go-rest-api/src/service/v1/location"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -51,29 +56,41 @@ func RouterSetup() *gin.Engine {
 	master = connection.DBMaster()
 
 	// repository
-	accountRepository := accountRepository.NewRepository(connection.DB{
+	accountRepo := accountRepository.NewRepository(connection.DB{
+		Master: master,
+	})
+	locationRepo := locationRepository.NewRepository(connection.DB{
 		Master: master,
 	})
 
 	// service
-	accountService := accountService.NewService(accountRepository)
+	accountSvc := accountService.NewService(accountRepo)
+	locationSvc := locationService.NewService(locationRepo
+	)
 	
 	// controller
-	authController := authController.NewController(accountService)
-	accountController := accountController.NewController(accountService)
+	authController := authController.NewController(accountSvc)
+	accountController := accountController.NewController(accountSvc)
+	locationController := locationController.NewController(locationSvc)
 
 	// endpoint
 	v1 := router.Group("v1")
 
 	auth := v1.Group("auth")
 	auth.POST("", authController.Login)
-	auth.GET("self", authController.AuthSelf)
 	auth.PATCH("forgot", authController.ForgotPassword)
 
 	accounts := v1.Group("accounts")
+	accounts.GET("", accountController.Get)
 	accounts.POST("register", accountController.Register)
 	accounts.PATCH("", accountController.Update)
 	accounts.DELETE("", accountController.Delete)
+
+	location := v1.Group("locations")
+	location.GET("", locationController.Get)
+	location.POST("", locationController.Create)
+	location.PATCH("", locationController.Update)
+	location.DELETE("", locationController.Delete)
 
 	return router
 }

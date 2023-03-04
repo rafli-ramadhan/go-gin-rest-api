@@ -86,33 +86,6 @@ func (ctrl *Controller) Login(ctx *gin.Context) {
 	})
 }
 
-// @Summary Get User Data
-// @Description Get User Data
-// @Tags Auth
-// @Produce application/json
-// @Param Authorization header string true "Bearer Token"
-// @Success 200 {object} http.GetUser
-// @Failure 400 {string} string "Bad Request"
-// @Failure 401 {string} string "Unauthorized"
-// @Failure 500 {string} string "Internal Server Error"
-// @Router /v1/auth/self [get]
-func (ctrl *Controller) AuthSelf(ctx *gin.Context) {
-	accountID, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
-	if err != nil {
-		rest.ResponseMessage(ctx, http.StatusUnauthorized)
-		return
-	}
-
-	response, err := ctrl.svc.TakeAccountByID(accountID)
-	if err != nil {
-		rest.ResponseMessage(ctx, http.StatusInternalServerError)
-		log.Println("get account by id:", err)
-		return
-	}
-
-	rest.ResponseData(ctx, http.StatusOK, response)
-}
-
 // @Summary Update User Password
 // @Description Update User Password
 // @Tags Auth
