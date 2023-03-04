@@ -48,14 +48,10 @@ npm install -g nodemon
 nodemon --exec go run src/main.go --signal SIGTERM
 ```
 
-![running](https://user-images.githubusercontent.com/112603532/221396507-ae69d6d8-10c1-4f42-8757-1f119889e24d.png)
-
 Swagger API Documentation URL:
 ```url
 http://localhost:5000/swagger/index.html#/
 ```
-
-![swagger](https://user-images.githubusercontent.com/112603532/221396511-1b79e78d-ca84-4a30-b76d-124521f8e0b5.png)
 
 ### Docker
 
@@ -69,6 +65,9 @@ docker-compose up --build
 .
 ├── .github
 │   └── PULL_REQUEST_TEMPLATE.md
+├── database-migrations
+│   ├──examples
+│   └──README.md
 ├── src
 │   ├── connection
 │   │   └── connection.go
@@ -76,18 +75,38 @@ docker-compose up --build
 │   │   └── constant.go
 │   ├── controller
 │   │   └── v1
-│   │       ├── user.go
+│   │       ├── account
+│   │       │   └── account.go
+│   │       ├── auth
+│   │       │   └── auth.go
+│   │       └── location
+│   │           └── location.go
+│   ├── http
+│   │   ├── account.go
+│   │   ├── auth.go
+│   │   └── location.go
+│   ├── model
+│   │   ├── account.go
+│   │   └── location.go
 │   ├── pkg
-│   │   └── http
-│   │       ├── user.go
+│   │   ├── bcrypt
+│   │   │   └── bcrypt.go
+│   │   └── jwt
+│   │       └── jwt.go
 │   ├── repository
 │   │   └── v1
-│   │       ├── user.go
+│   │       ├── account
+│   │       │   └── account.go
+│   │       └── location
+│   │           └── location.go
 │   ├── routes
-│   │   └── routes.go
+│   │   └── main.go
 │   ├── service
 │   │   └── v1
-│   │       ├── user.go
+│   │       ├── account
+│   │       │   └── account.go
+│   │       └── location
+│   │           └── location.go
 │   └── main.go
 ├── .env.example
 ├── .gitignore
