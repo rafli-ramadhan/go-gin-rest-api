@@ -33,6 +33,7 @@ func NewService(
 
 type Servicer interface {
 	Find(accountID int) (responses []http.GetAttendance, err error)
+	FindByLocation(accountID int) (responses []http.GetAttendanceByLocation, err error)
 	Add(accountID int, request http.AddAttendance) (err error)
 }
 
@@ -47,16 +48,66 @@ func (svc *Service) Find(accountID int) (responses []http.GetAttendance, err err
 		return
 	}
 
-	attendaceDatas, err := svc.repo.Find(accountID)
+	attendanceDatas, err := svc.repo.Find(accountID)
 	if err != nil {
 		err = errors.Wrap(err, "find attendance datas")
 		return
 	}
 
-	for i := range attendaceDatas {
+	for i := range attendanceDatas {
 		attendance := http.GetAttendance{}
-		copier.Copy(&attendance, &attendaceDatas[i])
+		location, err := svc.location.TakeLocationByID(attendanceDatas[i].LocationID)
+		if err != nil {
+			err = errors.Wrap(err, "check location by id")
+			return nil, err
+		}
+		attendance.LocationID = attendanceDatas[i].LocationID
+		attendance.LocationName = location.LocationName
+		attendance.Status = attendanceDatas[i].Status
+		attendance.Time = attendanceDatas[i].CreatedAt.String()
 		responses = append(responses, attendance)
+	}
+	return
+}
+
+func (svc *Service) FindByLocation(accountID int) (responses []http.GetAttendanceByLocation, err error) {
+	accountExist, err := svc.account.CheckAccountByID(accountID)
+	if err != nil {
+		err = errors.Wrap(err, "check account by id")
+		return
+	}
+	if !accountExist {
+		err = constant.ErrAccountNotRegistered
+		return
+	}
+
+	attendanceDatas, err := svc.repo.Find(accountID)
+	if err != nil {
+		err = errors.Wrap(err, "find attendance datas")
+		return
+	}
+
+	var locationNameCheck = make(map[int]bool)
+	if len(attendanceDatas) != 0 {
+		for i := range attendanceDatas {
+			if locationNameCheck[attendanceDatas[i].LocationID] {
+				continue
+			} else {
+				locationNameCheck[attendanceDatas[i].LocationID] = true
+			}
+
+			attendance := http.GetAttendanceByLocation{}
+			location, err := svc.location.TakeLocationByID(attendanceDatas[i].LocationID)
+			if err != nil {
+				err = errors.Wrap(err, "check location by id")
+				return nil, err
+			}
+			attendance.LocationID = attendanceDatas[i].LocationID
+			attendance.LocationName = location.LocationName
+			attendance.Address = location.Address
+			attendance.Status = attendanceDatas[i].Status
+			responses = append(responses, attendance)
+		}
 	}
 	return
 }

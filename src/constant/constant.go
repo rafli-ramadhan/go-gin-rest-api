@@ -11,6 +11,8 @@ const (
 	ContentTypeApplicationJson = "application/json"
 	DOBLayout                  = `01/01/2023`
 	DBServerMaster             = "master"
+	StatusCheckIn              = "check-in"
+	StatusCheckOut             = "check-out"
 )
 
 var (

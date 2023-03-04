@@ -30,7 +30,8 @@ type Repositorier interface {
 
 func (repo *Repository) Find(accountID int) (attendaceDatas []model.Attendance, err error) {
 	query := repo.dbMaster.Model(&model.Attendance{}).
-		Where("accountID", accountID).
+		Where("account_id", accountID).
+		Order("created_at desc").
 		Find(&attendaceDatas)
 	err = query.Error
 	return
@@ -38,7 +39,6 @@ func (repo *Repository) Find(accountID int) (attendaceDatas []model.Attendance, 
 
 func (repo *Repository) Create(accountID int, attendance model.Attendance) (err error) {
 	query := repo.dbMaster.Model(&attendance).Begin().
-	Where("accountID", accountID).
 		Create(&attendance)
 	err = query.Error
 	if err != nil {

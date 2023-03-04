@@ -95,6 +95,7 @@ func RouterSetup() *gin.Engine {
 
 	attendance := v1.Group("attendance")
 	attendance.GET("", attendanceController.Get)
+	attendance.GET("locations", attendanceController.GetByLocation)
 	attendance.POST("", attendanceController.Add)
 
 	location := v1.Group("locations")

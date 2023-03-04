@@ -1,9 +1,17 @@
 package http
 
 type GetAttendance struct {
-	AccountID  string  `json:"account_id"`
-	LocationID string  `json:"location_id"`
-	Status     string  `json:"status"`
+	LocationID   int     `json:"location_id"`
+	LocationName string  `json:"location_name"`
+	Status       string  `json:"status"`
+	Time         string  `json:"time"`
+}
+
+type GetAttendanceByLocation struct {
+	LocationID   int     `json:"location_id"`
+	LocationName string  `json:"location_name"`
+	Status       string  `json:"status"`
+	Address      string  `json:"address"`
 }
 
 type AddAttendance struct {

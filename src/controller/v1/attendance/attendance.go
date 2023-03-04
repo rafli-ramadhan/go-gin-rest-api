@@ -27,8 +27,8 @@ func NewController(
 	}
 }
 
-// @Summary Get Attendance  Data
-// @Description Get Attendance  Data
+// @Summary Get Attendance  History
+// @Description Get Attendance  History
 // @Tags Attendance 
 // @Produce application/json
 // @Param Authorization header string true "Bearer Token"
@@ -36,7 +36,7 @@ func NewController(
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /v1/attendances [get]
+// @Router /v1/attendance [get]
 func (ctrl *Controller) Get(ctx *gin.Context) {
 	accountID, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
 	if err != nil {
@@ -59,6 +59,38 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 	rest.ResponseData(ctx, http.StatusOK, response)
 }
 
+// @Summary Get Attendance Status By Locations
+// @Description Get Attendance Status By Locations
+// @Tags Attendance 
+// @Produce application/json
+// @Param Authorization header string true "Bearer Token"
+// @Success 200 {object} http.GetAttendanceByLocation
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /v1/attendance/locations [get]
+func (ctrl *Controller) GetByLocation(ctx *gin.Context) {
+	accountID, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
+	if err != nil {
+		rest.ResponseMessage(ctx, http.StatusUnauthorized)
+		return
+	}
+
+	response, err := ctrl.svc.FindByLocation(accountID)
+	if err != nil {
+		if errors.Is(err, constant.ErrAccountNotRegistered) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"account_id": constant.ErrAccountNotRegistered.Error()})
+			return
+		}
+		rest.ResponseMessage(ctx, http.StatusInternalServerError)
+		log.Println("get attendance by account id and by location:", err)
+		return
+	}
+
+	rest.ResponseData(ctx, http.StatusOK, response)
+}
+
 // Create godoc
 // @Summary Create Attendance
 // @Description Create Attendance
@@ -68,7 +100,7 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 // @Failure 400 {string} string "Bad Request"
 // @Failure 409 {string} string "Resource Conflict"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /v1/attendances [post]
+// @Router /v1/attendance [post]
 func (ctrl *Controller) Add(ctx *gin.Context) {
 	accountID, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
 	if err != nil {
