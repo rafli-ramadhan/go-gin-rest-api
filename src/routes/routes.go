@@ -48,7 +48,7 @@ func RouterSetup() *gin.Engine {
 	router.Use(middleware.CORS)
 
 	// swagger
-	docs.SwaggerInfo.Title = "Phincon Attendance Rest API"
+	docs.SwaggerInfo.Title = "Phincon Attendance App Rest API"
 	docs.SwaggerInfo.Description = "Phincon Attendance Rest API"
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = os.Getenv("SWAGGER_HOST")

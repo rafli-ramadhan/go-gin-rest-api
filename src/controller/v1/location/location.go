@@ -81,6 +81,7 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 // @Summary Create Location
 // @Description Create Location
 // @Tags Locations
+// @Param Authorization header string true "Bearer Token"
 // @Param Payload body http.CreateLocation true "Payload"
 // @Success 201 {object} string "Created"
 // @Failure 400 {string} string "Bad Request"
@@ -88,6 +89,12 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /v1/locations [post]
 func (ctrl *Controller) Create(ctx *gin.Context) {
+	_, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
+	if err != nil {
+		rest.ResponseMessage(ctx, http.StatusUnauthorized)
+		return
+	}
+
 	req := entity.CreateLocation{}
 	if err := rest.BindJSON(ctx, &req); err != nil {
 		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
@@ -102,7 +109,7 @@ func (ctrl *Controller) Create(ctx *gin.Context) {
 		return
 	}
 
-	err := ctrl.svc.Create(req)
+	err = ctrl.svc.Create(req)
 	if errors.Is(err, constant.ErrInvalidLocationName) {
 		rest.ResponseError(ctx, http.StatusConflict, map[string]string{
 			"location": constant.ErrInvalidLocationName.Error()})
@@ -132,9 +139,15 @@ func (ctrl *Controller) Create(ctx *gin.Context) {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /v1/locations [patch]
 func (ctrl *Controller) Update(ctx *gin.Context) {
+	_, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
+	if err != nil {
+		rest.ResponseMessage(ctx, http.StatusUnauthorized)
+		return
+	}
+
 	request := entity.UpdateLocation{}
 	// int di isi dengan string maka akan return invalid format
-	err := rest.BindJSON(ctx, &request)
+	err = rest.BindJSON(ctx, &request)
 	if err != nil {
 		log.Println("bind json:", err, "request:", request)
 		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
@@ -146,12 +159,6 @@ func (ctrl *Controller) Update(ctx *gin.Context) {
 	if err := validation.Validator.Struct(request); err != nil {
 		log.Println("validate struct:", err, "request:", request)
 		rest.ResponseError(ctx, http.StatusBadRequest, err)
-		return
-	}
-
-	_, err = jwt.ExtractID(ctx.GetHeader("Authorization"))
-	if err != nil {
-		rest.ResponseMessage(ctx, http.StatusUnauthorized)
 		return
 	}
 

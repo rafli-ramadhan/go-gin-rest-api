@@ -131,6 +131,9 @@ func (svc *Service) Create(request http.CreateLocation) (err error) {
 	} else {
 		newLocation := model.Location{}
 		copier.Copy(&newLocation, &request)
+		if newLocation.PhotoURL == "" {
+			newLocation.PhotoURL = "https://th.bing.com/th/id/OIP.gBRzG71aa1f6dy_MuGUwOAHaEo?pid=ImgDet&rs=1"
+		}
 
 		err = svc.repo.Create(newLocation)
 		if err != nil {
