@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type User struct {
+type Account struct {
 	gorm.Model
 	Username          string    `gorm:"column:username;type:varchar(50)"`
 	FullName          string    `gorm:"column:full_name;type:varchar(150)"`
@@ -23,10 +23,10 @@ type User struct {
 	IsVerified        bool      `gorm:"column:is_verified;type:bool"`
 }
 
-func (User) TableName() string {
+func (Account) TableName() string {
 	return "accounts"
 }
 
-func (m User) DOBString() string {
+func (m Account) DOBString() string {
 	return m.DateOfBirth.Format(constant.DOBLayout)
 }

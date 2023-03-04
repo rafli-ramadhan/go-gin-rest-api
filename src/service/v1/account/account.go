@@ -28,7 +28,8 @@ func NewService(
 
 type Servicer interface {
 	TakeAccountByID(accountID int) (accounts http.GetUser, err error)
-	TakeAccountByUsername(username string) (account model.User, err error)
+	TakeAccountByKTPNumber(ktpNumber string) (account model.Account, err error)
+	TakeAccountByUsername(username string) (account model.Account, err error)
 	Find(accountIDs []int) (accounts []http.GetUser, err error)
 	CheckAccountByID(accountID int) (exist bool, err error)
 	CheckAccountByEmail(email string) (exist bool, err error)
@@ -37,6 +38,7 @@ type Servicer interface {
 	CheckAccountByUsername(username string) (exist bool, err error)
 	Create(request http.RegisterUser) (err error)
 	Update(accountID int, request http.UpdateUser) (err error)
+	UpdatePassword(request http.ForgotPassword) (err error)
 	Delete(accountID int) (err error)
 }
 
@@ -56,13 +58,25 @@ func (svc *Service) TakeAccountByID(accountID int) (account http.GetUser, err er
 	return
 }
 
-func (svc *Service) TakeAccountByUsername(username string) (account model.User, err error) {
+func (svc *Service) TakeAccountByKTPNumber(ktpNumber string) (account model.Account, err error) {
+	account, err = svc.repo.TakeAccountByKTPNumber(ktpNumber)
+	if err == gorm.ErrRecordNotFound {
+		err = constant.ErrAccountNotRegistered
+		return
+	} else if err != nil {
+		err = errors.Wrap(err, "take account by ktp number")
+		return
+	}
+	return
+}
+
+func (svc *Service) TakeAccountByUsername(username string) (account model.Account, err error) {
 	account, err = svc.repo.TakeAccountByUsername(username)
 	if err == gorm.ErrRecordNotFound {
 		err = constant.ErrAccountNotRegistered
 		return
 	} else if err != nil {
-		err = errors.Wrap(err, "take account")
+		err = errors.Wrap(err, "take account by username")
 		return
 	}
 	return
@@ -179,10 +193,10 @@ func (svc *Service) Create(request http.RegisterUser) (err error) {
 		err = constant.ErrAccountExist
 		return
 	} else {
-		newAccount := model.User{}
+		newAccount := model.Account{}
 		copier.Copy(&newAccount, &request)
 
-		hashedPassword, err := bcrypt.GeneratePasswordHarsh(newAccount.Password)
+		hashedPassword, err := bcrypt.GenerateHash(newAccount.Password)
 		if err != nil {
 			err = errors.Wrap(err, "hash password")
 			return err
@@ -209,40 +223,93 @@ func (svc *Service) Update(accountID int, request http.UpdateUser) (err error) {
 	}
 
 	if request.Username != "" {
-	    emailExist, _ := svc.CheckAccountByUsername(request.Username)
-	    if emailExist {
+	    usernameExist, _ := svc.CheckAccountByUsername(request.Username)
+	    if usernameExist {
 		    err = constant.ErrUsernameAlreadyExist
 		    return
 	    }
 	}
 
-	if request.Email != "" {
-	    emailExist, _ := svc.CheckAccountByEmail(request.Email)
+	if request.Email != nil {
+	    emailExist, _ := svc.CheckAccountByEmail(*request.Email)
 	    if emailExist {
 		    err = constant.ErrEmailAlreadyExist
 		    return
 	    }
 	}
 
-	if request.KTPNumber != "" {
-	    emailExist, _ := svc.CheckAccountByKTPNumber(request.KTPNumber)
-	    if emailExist {
+	if request.KTPNumber != nil {
+	    ktpNumberExist, _ := svc.CheckAccountByKTPNumber(aes.Encrypt(*request.KTPNumber))
+	    if ktpNumberExist {
 		    err = constant.ErrKTPNumberAlreadyExist
 		    return
 	    }
 	}
 
-	if request.PhoneNumber != "" {
-	    emailExist, _ := svc.CheckAccountByPhoneNumber(request.PhoneNumber)
-	    if emailExist {
+	if request.Password != "" {
+		hashedNewPassword, err := bcrypt.GenerateHash(request.Password)
+	    if err != nil {
+		    err = errors.Wrap(err, "hash new password")
+		    return err
+	    }
+		request.Password = hashedNewPassword
+	}
+
+	if request.PhoneNumber != nil {
+	    phoneNumberExist, _ := svc.CheckAccountByPhoneNumber(*request.PhoneNumber)
+	    if phoneNumberExist {
 		    err = constant.ErrPhoneNumberAlreadyExist
 		    return
 	    }
 	}
 
-	err = svc.repo.Update(accountID, request)
+	account := model.Account{}
+	copier.Copy(&account, &request)
+	if request.KTPNumber != nil {
+	    *account.KTPNumber = aes.Encrypt(*request.KTPNumber)
+	}
+
+	err = svc.repo.Update(accountID, account)
 	if err != nil {
 		err = errors.Wrap(err, "update account")
+		return
+	}
+	return
+}
+
+func (svc *Service) UpdatePassword(request http.ForgotPassword) (err error) {
+	var accountID int
+	if request.KTPNumber != nil {
+	    ktpNumberExist, _ := svc.CheckAccountByKTPNumber(aes.Encrypt(*request.KTPNumber))
+	    if !ktpNumberExist {
+		    err = constant.ErrAccountNotRegistered
+		    return
+	    }
+
+		account, err := svc.TakeAccountByKTPNumber(aes.Encrypt(*request.KTPNumber))
+		if err != nil {
+			err = errors.Wrap(err, "take account by ktp number")
+			return err
+		}
+		accountID = int(account.ID)
+	}
+
+	hashedNewPassword, err := bcrypt.GenerateHash(request.Password)
+	if err != nil {
+		err = errors.Wrap(err, "hash new password")
+		return err
+	}
+
+	account := model.Account{}
+	copier.Copy(&account, &request)
+	account.Password = hashedNewPassword
+	if request.KTPNumber != nil {
+	    *account.KTPNumber = aes.Encrypt(*request.KTPNumber)
+	}
+
+	err = svc.repo.Update(accountID, account)
+	if err != nil {
+	    err = errors.Wrap(err, "update password")
 		return
 	}
 	return

@@ -14,6 +14,7 @@ import (
 	"github.com/forkyid/go-utils/v1/rest"
 	"github.com/forkyid/go-utils/v1/validation"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 )
 
 type Controller struct {
@@ -67,7 +68,7 @@ func (ctrl *Controller) Login(ctx *gin.Context) {
 		return
 	}
 
-	err = bcrypt.CheckPasswordHarsh(account.Password, request.Password)
+	err = bcrypt.CheckHash(account.Password, request.Password)
 	if err != nil {
 		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
 			"accounts": constant.ErrInvalidPassword.Error()})
@@ -110,4 +111,45 @@ func (ctrl *Controller) AuthSelf(ctx *gin.Context) {
 	}
 
 	rest.ResponseData(ctx, http.StatusOK, response)
+}
+
+// @Summary Update User Password
+// @Description Update User Password
+// @Tags Auth
+// @Produce application/json
+// @Param Payload body http.ForgotPassword true "Payload"
+// @Success 200 {string} string "Success"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /v1/auth/forgot [patch]
+func (ctrl *Controller) ForgotPassword(ctx *gin.Context) {
+	request := entity.ForgotPassword{}
+	err := rest.BindJSON(ctx, &request)
+	if err != nil {
+		log.Println("bind json:", err, "request:", request)
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"body": constant.ErrInvalidFormat.Error()})
+		return
+	}
+
+	if err := validation.Validator.Struct(request); err != nil {
+		log.Println("validate struct:", err, "request:", request)
+		rest.ResponseError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	err = ctrl.svc.UpdatePassword(request)
+	if err != nil {
+		if errors.Is(err, constant.ErrPasswordCannotBeEmpty) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrPasswordCannotBeEmpty.Error()})
+			return
+		}
+		rest.ResponseMessage(ctx, http.StatusInternalServerError)
+		log.Println("update account password:", err)
+		return
+	}
+
+	rest.ResponseMessage(ctx, http.StatusOK)
 }

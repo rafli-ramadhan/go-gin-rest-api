@@ -9,7 +9,7 @@ import (
 	"go-rest-api/src/pkg/jwt"
 	entity "go-rest-api/src/http"
 	"go-rest-api/src/service/v1/account"
-	"github.com/forkyid/go-utils/v1/aes"
+	// "github.com/forkyid/go-utils/v1/aes"
 	"github.com/forkyid/go-utils/v1/rest"
 	"github.com/forkyid/go-utils/v1/validation"
 	"github.com/gin-gonic/gin"
@@ -70,6 +70,7 @@ func (ctrl *Controller) Register(ctx *gin.Context) {
 // @Router /v1/accounts [patch]
 func (ctrl *Controller) Update(ctx *gin.Context) {
 	request := entity.UpdateUser{}
+	// int di isi dengan string maka akan return invalid format
 	err := rest.BindJSON(ctx, &request)
 	if err != nil {
 		log.Println("bind json:", err, "request:", request)
@@ -78,54 +79,48 @@ func (ctrl *Controller) Update(ctx *gin.Context) {
 		return
 	}
 
+	// required tapi tidak diisi akan return bad request
 	if err := validation.Validator.Struct(request); err != nil {
 		log.Println("validate struct:", err, "request:", request)
 		rest.ResponseError(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	_, err = jwt.ExtractID(ctx.GetHeader("Authorization"))
+	accountID, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
 	if err != nil {
 		rest.ResponseMessage(ctx, http.StatusUnauthorized)
 		return
 	}
 
-	accountID := ctx.Query("account_id")
-	if accountID == "" {
-		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
-			"account_id": constant.ErrInvalidID.Error()})
-		return
-	} else {
-		err = ctrl.svc.Update(aes.Decrypt(accountID), request)
-		if err != nil {
-			if errors.Is(err, constant.ErrAccountNotRegistered) {
-				rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
-					"accounts": constant.ErrAccountNotRegistered.Error()})
-				return
-			} else if errors.Is(err, constant.ErrUsernameAlreadyExist) {
-				rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
-					"accounts": constant.ErrUsernameAlreadyExist.Error()})
-				return
-			} else if errors.Is(err, constant.ErrEmailAlreadyExist) {
-				rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
-					"accounts": constant.ErrEmailAlreadyExist.Error()})
-				return
-			} else if errors.Is(err, constant.ErrKTPNumberAlreadyExist) {
-				rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
-					"accounts": constant.ErrKTPNumberAlreadyExist.Error()})
-				return
-			} else if errors.Is(err, constant.ErrPhoneNumberAlreadyExist) {
-				rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
-					"accounts": constant.ErrPhoneNumberAlreadyExist.Error()})
-				return
-			}
-			rest.ResponseMessage(ctx, http.StatusInternalServerError)
-			log.Println("update account: ", err.Error())
+	err = ctrl.svc.Update(accountID, request)
+	if err != nil {
+		if errors.Is(err, constant.ErrAccountNotRegistered) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrAccountNotRegistered.Error()})
+			return
+		} else if errors.Is(err, constant.ErrUsernameAlreadyExist) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrUsernameAlreadyExist.Error()})
+			return
+		} else if errors.Is(err, constant.ErrEmailAlreadyExist) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrEmailAlreadyExist.Error()})
+			return
+		} else if errors.Is(err, constant.ErrKTPNumberAlreadyExist) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrKTPNumberAlreadyExist.Error()})
+			return
+		} else if errors.Is(err, constant.ErrPhoneNumberAlreadyExist) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrPhoneNumberAlreadyExist.Error()})
 			return
 		}
-
-		rest.ResponseMessage(ctx, http.StatusOK)
+		rest.ResponseMessage(ctx, http.StatusInternalServerError)
+		log.Println("update account: ", err.Error())
+		return
 	}
+
+	rest.ResponseMessage(ctx, http.StatusOK)
 }
 
 // Delete godoc

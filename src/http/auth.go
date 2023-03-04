@@ -20,6 +20,6 @@ type Token struct {
 }
 
 type ForgotPassword struct {
-	Username    string `json:"username" validate:"required"`
-	NewPassword string `json:"new_password" validate:"required"`
+	KTPNumber *int    `json:"ktp_number" validate:"required"`
+	Password  string  `json:"new_password" validate:"required"`
 }

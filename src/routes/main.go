@@ -40,11 +40,11 @@ func RouterSetup() *gin.Engine {
 	router.Use(middleware.CORS)
 
 	// swagger
-	docs.SwaggerInfo.Title = "Go Rest API"
-	docs.SwaggerInfo.Description = "Go Rest API"
+	docs.SwaggerInfo.Title = "Phincon Attendance Rest API"
+	docs.SwaggerInfo.Description = "Phincon Attendance Rest API"
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = os.Getenv("SWAGGER_HOST")
-	docs.SwaggerInfo.Schemes = []string{"https", "http"}
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// database connection (type *gorm.DB)
@@ -68,6 +68,7 @@ func RouterSetup() *gin.Engine {
 	auth := v1.Group("auth")
 	auth.POST("", authController.Login)
 	auth.GET("self", authController.AuthSelf)
+	auth.PATCH("forgot", authController.ForgotPassword)
 
 	accounts := v1.Group("accounts")
 	accounts.POST("register", accountController.Register)
