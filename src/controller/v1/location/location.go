@@ -95,6 +95,13 @@ func (ctrl *Controller) Create(ctx *gin.Context) {
 		return
 	}
 
+	// required tapi tidak diisi akan return bad request
+	if err := validation.Validator.Struct(req); err != nil {
+		log.Println("validate struct:", err, "request:", req)
+		rest.ResponseError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
 	err := ctrl.svc.Create(req)
 	if errors.Is(err, constant.ErrInvalidLocationName) {
 		rest.ResponseError(ctx, http.StatusConflict, map[string]string{
@@ -106,7 +113,7 @@ func (ctrl *Controller) Create(ctx *gin.Context) {
 		rest.ResponseError(ctx, http.StatusConflict, map[string]string{
 			"location": constant.ErrLocationAlreadyExist.Error()})
 	} else if err != nil {
-		log.Println("location name:", err.Error())
+		log.Println("location:", err.Error())
 		rest.ResponseMessage(ctx, http.StatusInternalServerError)
 	} else {
 		rest.ResponseMessage(ctx, http.StatusCreated)

@@ -37,6 +37,12 @@ go mod tidy
 ## Install Nodemon
 
 ```bash
+npm install
+```
+
+or
+
+```bash
 npm install -g nodemon
 ```
 
@@ -110,6 +116,7 @@ docker-compose up --build
 │   └── main.go
 ├── .env.example
 ├── .gitignore
-├── README.md
-└── go.mod
+├── go.mod
+├── LICENSE
+└── README.md
 ```

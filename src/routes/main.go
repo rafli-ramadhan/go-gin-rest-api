@@ -13,12 +13,15 @@ import (
 
 	authController "go-rest-api/src/controller/v1/auth"
 	accountController "go-rest-api/src/controller/v1/account"
+	attendanceController "go-rest-api/src/controller/v1/attendance"
 	locationController "go-rest-api/src/controller/v1/location"
 
 	accountRepository "go-rest-api/src/repository/v1/account"
+	attendanceRepository "go-rest-api/src/repository/v1/attendance"
 	locationRepository "go-rest-api/src/repository/v1/location"
 
 	accountService "go-rest-api/src/service/v1/account"
+	attendanceService "go-rest-api/src/service/v1/attendance"
 	locationService "go-rest-api/src/service/v1/location"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -59,6 +62,9 @@ func RouterSetup() *gin.Engine {
 	accountRepo := accountRepository.NewRepository(connection.DB{
 		Master: master,
 	})
+	attendanceRepo := attendanceRepository.NewRepository(connection.DB{
+		Master: master,
+	})
 	locationRepo := locationRepository.NewRepository(connection.DB{
 		Master: master,
 	})
@@ -66,13 +72,15 @@ func RouterSetup() *gin.Engine {
 	// service
 	accountSvc := accountService.NewService(accountRepo)
 	locationSvc := locationService.NewService(locationRepo)
+	attendanceSvc := attendanceService.NewService(attendanceRepo, accountSvc, locationSvc)
 	
 	// controller
 	authController := authController.NewController(accountSvc)
 	accountController := accountController.NewController(accountSvc)
+	attendanceController := attendanceController.NewController(attendanceSvc)
 	locationController := locationController.NewController(locationSvc)
 
-	// endpoint
+	// endpoint v1
 	v1 := router.Group("v1")
 
 	auth := v1.Group("auth")
@@ -85,11 +93,19 @@ func RouterSetup() *gin.Engine {
 	accounts.PATCH("", accountController.Update)
 	accounts.DELETE("", accountController.Delete)
 
+	attendance := v1.Group("attendance")
+	attendance.GET("", attendanceController.Get)
+	attendance.POST("", attendanceController.Add)
+
 	location := v1.Group("locations")
 	location.GET("", locationController.Get)
 	location.POST("", locationController.Create)
 	location.PATCH("", locationController.Update)
 	location.DELETE("", locationController.Delete)
+
+	// endpoint v2
+
+	// endpoint v3
 
 	return router
 }

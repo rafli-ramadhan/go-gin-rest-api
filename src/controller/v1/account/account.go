@@ -73,6 +73,13 @@ func (ctrl *Controller) Register(ctx *gin.Context) {
 		return
 	}
 
+	// required tapi tidak diisi akan return bad request
+	if err := validation.Validator.Struct(req); err != nil {
+		log.Println("validate struct:", err, "request:", req)
+		rest.ResponseError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
 	req.Username = strings.ToLower(req.Username)
 	err := ctrl.svc.Create(req)
 	if errors.Is(err, constant.ErrAccountExist) {
