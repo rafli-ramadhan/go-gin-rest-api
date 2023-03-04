@@ -196,7 +196,7 @@ func (svc *Service) Create(request http.RegisterUser) (err error) {
 		newAccount := model.Account{}
 		copier.Copy(&newAccount, &request)
 
-		hashedPassword, err := bcrypt.GenerateHash(newAccount.Password)
+		hashedPassword, err := bcrypt.HashPassword(newAccount.Password)
 		if err != nil {
 			err = errors.Wrap(err, "hash password")
 			return err
@@ -247,7 +247,7 @@ func (svc *Service) Update(accountID int, request http.UpdateUser) (err error) {
 	}
 
 	if request.Password != "" {
-		hashedNewPassword, err := bcrypt.GenerateHash(request.Password)
+		hashedNewPassword, err := bcrypt.HashPassword(request.Password)
 	    if err != nil {
 		    err = errors.Wrap(err, "hash new password")
 		    return err
@@ -294,7 +294,7 @@ func (svc *Service) UpdatePassword(request http.ForgotPassword) (err error) {
 		accountID = int(account.ID)
 	}
 
-	hashedNewPassword, err := bcrypt.GenerateHash(request.Password)
+	hashedNewPassword, err := bcrypt.HashPassword(request.Password)
 	if err != nil {
 		err = errors.Wrap(err, "hash new password")
 		return err

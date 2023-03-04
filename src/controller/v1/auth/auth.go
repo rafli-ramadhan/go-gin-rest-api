@@ -68,7 +68,7 @@ func (ctrl *Controller) Login(ctx *gin.Context) {
 		return
 	}
 
-	err = bcrypt.CheckHash(account.Password, request.Password)
+	err = bcrypt.ComparePassword(account.Password, request.Password)
 	if err != nil {
 		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
 			"accounts": constant.ErrInvalidPassword.Error()})
