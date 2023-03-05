@@ -298,14 +298,14 @@ func (svc *Service) Update(accountID int, request http.UpdateUser) (err error) {
 
 func (svc *Service) UpdatePassword(request http.ForgotPassword) (err error) {
 	var accountID int
-	if request.KTPNumber != nil {
-	    ktpNumberExist, _ := svc.CheckAccountByKTPNumber(aes.Encrypt(*request.KTPNumber))
+	if request.KTPNumber != 0 {
+	    ktpNumberExist, _ := svc.CheckAccountByKTPNumber(aes.Encrypt(request.KTPNumber))
 	    if !ktpNumberExist {
 		    err = constant.ErrAccountNotRegistered
 		    return
 	    }
 
-		account, err := svc.TakeAccountByKTPNumber(aes.Encrypt(*request.KTPNumber))
+		account, err := svc.TakeAccountByKTPNumber(aes.Encrypt(request.KTPNumber))
 		if err != nil {
 			err = errors.Wrap(err, "take account by ktp number")
 			return err
@@ -322,8 +322,8 @@ func (svc *Service) UpdatePassword(request http.ForgotPassword) (err error) {
 	account := model.Account{}
 	copier.Copy(&account, &request)
 	account.Password = hashedNewPassword
-	if request.KTPNumber != nil {
-	    *account.KTPNumber = aes.Encrypt(*request.KTPNumber)
+	if request.KTPNumber != 0 {
+	    *account.KTPNumber = aes.Encrypt(request.KTPNumber)
 	}
 
 	err = svc.repo.Update(accountID, account)
