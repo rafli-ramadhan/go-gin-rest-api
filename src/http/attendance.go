@@ -5,6 +5,7 @@ type GetAttendance struct {
 	LocationName string  `json:"location_name"`
 	Status       string  `json:"status"`
 	Time         string  `json:"time"`
+	Description  string  `json:"description"`
 }
 
 type GetAttendanceByLocation struct {

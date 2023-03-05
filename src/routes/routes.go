@@ -94,7 +94,7 @@ func RouterSetup() *gin.Engine {
 	accounts.DELETE("", accountController.Delete)
 
 	attendance := v1.Group("attendance")
-	attendance.GET("", attendanceController.Get)
+	attendance.GET("history", attendanceController.Get)
 	attendance.GET("locations", attendanceController.GetByLocation)
 	attendance.POST("", attendanceController.Add)
 

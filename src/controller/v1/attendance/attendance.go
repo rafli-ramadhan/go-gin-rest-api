@@ -40,7 +40,7 @@ func NewController(
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /v1/attendance [get]
+// @Router /v1/attendance/history [get]
 func (ctrl *Controller) Get(ctx *gin.Context) {
 	accountID, err := jwt.ExtractID(ctx.GetHeader("Authorization"))
 	if err != nil {

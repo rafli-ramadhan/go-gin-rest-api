@@ -1,10 +1,9 @@
 package attendance
 
 import (
+	"fmt"
 	"time"
 
-	"github.com/jinzhu/copier"
-	"github.com/pkg/errors"
 	"go-rest-api/src/constant"
 	"go-rest-api/src/http"
 	"go-rest-api/src/model"
@@ -12,6 +11,9 @@ import (
 	"go-rest-api/src/repository/v1/attendance"
 	"go-rest-api/src/service/v1/account"
 	"go-rest-api/src/service/v1/location"
+
+	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 )
 
 type Service struct {
@@ -65,7 +67,12 @@ func (svc *Service) Find(accountID int, pgn pagination.Pagination) (responses []
 		attendance.LocationID = attendanceDatas[i].LocationID
 		attendance.LocationName = location.LocationName
 		attendance.Status = attendanceDatas[i].Status
-		attendance.Time = attendanceDatas[i].CreatedAt.String()
+		attendance.Time = attendanceDatas[i].CreatedAt.Format("03:04 PM")
+		if attendanceDatas[i].Status == constant.StatusCheckIn {
+			attendance.Description = fmt.Sprintf("Check In - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.Format("03:04 PM"))
+		} else {
+			attendance.Description = fmt.Sprintf("Check Out - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.Format("03:04 PM"))
+		}
 		responses = append(responses, attendance)
 	}
 	return
