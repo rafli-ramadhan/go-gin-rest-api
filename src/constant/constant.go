@@ -11,6 +11,9 @@ const (
 	ContentTypeApplicationJson = "application/json"
 	DOBLayout                  = `01/01/2023`
 	DBServerMaster             = "master"
+	FilterByDay                = "day"
+	FilterByWeek               = "week"
+	FilterByMonth              = "month"
 	StatusCheckIn              = "check-in"
 	StatusCheckOut             = "check-out"
 )

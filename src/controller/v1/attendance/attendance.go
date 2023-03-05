@@ -34,8 +34,9 @@ func NewController(
 // @Tags Attendance 
 // @Produce application/json
 // @Param Authorization header string true "Bearer Token"
-// @Param Limit query int false "limit"
-// @Param Page query int false "page"
+// @Param Limit query string true "limit"
+// @Param Page query string true "page"
+// @Param Filter query string true "string enums" Enums(day, week, month)
 // @Success 200 {object} http.GetAttendance
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
@@ -82,7 +83,15 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 	}
 	pgn.Paginate()
 
-	response, err := ctrl.svc.Find(accountID, pgn)
+	filter := ctx.Query("Filter")
+	log.Print(filter)
+	if filter != constant.FilterByDay && filter != constant.FilterByWeek && filter != constant.FilterByMonth {
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"filter": constant.ErrInvalidFormat.Error()})
+		return
+	}
+
+	response, err := ctrl.svc.FindAttendanceHistory(accountID, pgn, filter)
 	if err != nil {
 		if errors.Is(err, constant.ErrAccountNotRegistered) {
 			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
@@ -102,8 +111,8 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 // @Tags Attendance 
 // @Produce application/json
 // @Param Authorization header string true "Bearer Token"
-// @Param Limit query string false "limit"
-// @Param Page query string false "page"
+// @Param Limit query string true "limit"
+// @Param Page query string true "page"
 // @Success 200 {object} http.GetAttendanceByLocation
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
@@ -166,8 +175,8 @@ func (ctrl *Controller) GetByLocation(ctx *gin.Context) {
 }
 
 // Create godoc
-// @Summary Create Attendance
-// @Description Create Attendance
+// @Summary Add Attendance
+// @Description Add Attendance
 // @Tags Attendance 
 // @Param Payload body http.AddAttendance true "Payload"
 // @Success 201 {object} string "Created"

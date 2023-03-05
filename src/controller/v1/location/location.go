@@ -35,7 +35,7 @@ func NewController(
 // @Tags Locations
 // @Produce application/json
 // @Param Authorization header string true "Bearer Token"
-// @Param location_ids query string false "location_ids separated by comma, example: 1,2,3,4,5"
+// @Param location_ids query string true "location_ids separated by comma, example: 1,2,3,4,5"
 // @Success 200 {object} http.GetLocation
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
@@ -132,7 +132,7 @@ func (ctrl *Controller) Create(ctx *gin.Context) {
 // @Description Update Location
 // @Tags Locations
 // @Param Authorization header string true "Bearer Token"
-// @Param location_id query string false "location_id"
+// @Param location_id query string true "location_id"
 // @Param Payload body http.UpdateLocation true "Payload"
 // @Success 200 {string} string "Success"
 // @Failure 400 {string} string "Bad Request"
@@ -200,7 +200,7 @@ func (ctrl *Controller) Update(ctx *gin.Context) {
 // @Description Delete Location By Location Itself
 // @Tags Locations
 // @Param Authorization header string true "Bearer Token"
-// @Param location_id query string false "location_id"
+// @Param location_id query string true "location_id"
 // @Success 200 {string} string "Success"
 // @Failure 400 {string} string "Bad Request"
 // @Failure 409 {string} string "Resource Conflict"

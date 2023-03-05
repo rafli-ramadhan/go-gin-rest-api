@@ -98,7 +98,6 @@ func (ctrl *Controller) Register(ctx *gin.Context) {
 // @Description Update Account
 // @Tags Accounts
 // @Param Payload body http.UpdateUser true "Payload"
-// @Param account_id query string false "account_id"
 // @Success 200 {string} string "Success"
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
@@ -163,7 +162,6 @@ func (ctrl *Controller) Update(ctx *gin.Context) {
 // @Description Delete Account By User Itself
 // @Tags Accounts
 // @Param Authorization header string true "Bearer Token"
-// @Param account_id query string false "account_id"
 // @Success 200 {string} string "Success"
 // @Failure 400 {string} string "Bad Request"
 // @Failure 409 {string} string "Resource Conflict"

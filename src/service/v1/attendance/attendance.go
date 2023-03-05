@@ -35,12 +35,12 @@ func NewService(
 }
 
 type Servicer interface {
-	Find(accountID int, pgn pagination.Pagination) (responses []http.GetAttendance, err error)
+	FindAttendanceHistory(accountID int, pgn pagination.Pagination, filter string) (responses []http.GetAttendance, err error)
 	FindByLocation(accountID int, pgn pagination.Pagination) (responses []http.GetAttendanceByLocation, err error)
 	Add(accountID int, request http.AddAttendance) (err error)
 }
 
-func (svc *Service) Find(accountID int, pgn pagination.Pagination) (responses []http.GetAttendance, err error) {
+func (svc *Service) FindAttendanceHistory(accountID int, pgn pagination.Pagination, filter string) (responses []http.GetAttendance, err error) {
 	accountExist, err := svc.account.CheckAccountByID(accountID)
 	if err != nil {
 		err = errors.Wrap(err, "check account by id")
@@ -57,23 +57,40 @@ func (svc *Service) Find(accountID int, pgn pagination.Pagination) (responses []
 		return
 	}
 
-	for i := range attendanceDatas {
-		attendance := http.GetAttendance{}
-		location, err := svc.location.TakeLocationByID(attendanceDatas[i].LocationID)
-		if err != nil {
-			err = errors.Wrap(err, "check location by id")
-			return nil, err
+	if len(attendanceDatas) != 0 {
+		now := time.Now()
+		for i := range attendanceDatas {
+			if filter == constant.FilterByDay {
+				if attendanceDatas[i].CreatedAt.Year() != now.Year() && attendanceDatas[i].CreatedAt.Day() != now.Day() {
+					continue
+				}
+			} else if filter == constant.FilterByWeek {
+				if attendanceDatas[i].CreatedAt.Year() != now.Year() && attendanceDatas[i].CreatedAt.Month() != now.Month() && now.Day() - attendanceDatas[i].CreatedAt.Day() > 7 {
+					continue
+				}
+			} else if filter == constant.FilterByMonth {
+				if attendanceDatas[i].CreatedAt.Year() != now.Year() && attendanceDatas[i].CreatedAt.Month() != now.Month() {
+					continue
+				}
+			}
+
+			attendance := http.GetAttendance{}
+			location, err := svc.location.TakeLocationByID(attendanceDatas[i].LocationID)
+			if err != nil {
+				err = errors.Wrap(err, "check location by id")
+				return nil, err
+			}
+			attendance.LocationID = attendanceDatas[i].LocationID
+			attendance.LocationName = location.LocationName
+			attendance.Status = attendanceDatas[i].Status
+			attendance.Time = attendanceDatas[i].CreatedAt.Format("03:04 PM")
+			if attendanceDatas[i].Status == constant.StatusCheckIn {
+				attendance.Description = fmt.Sprintf("Check In - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.Format("03:04 PM"))
+			} else {
+				attendance.Description = fmt.Sprintf("Check Out - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.Format("03:04 PM"))
+			}
+			responses = append(responses, attendance)
 		}
-		attendance.LocationID = attendanceDatas[i].LocationID
-		attendance.LocationName = location.LocationName
-		attendance.Status = attendanceDatas[i].Status
-		attendance.Time = attendanceDatas[i].CreatedAt.Format("03:04 PM")
-		if attendanceDatas[i].Status == constant.StatusCheckIn {
-			attendance.Description = fmt.Sprintf("Check In - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.Format("03:04 PM"))
-		} else {
-			attendance.Description = fmt.Sprintf("Check Out - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.Format("03:04 PM"))
-		}
-		responses = append(responses, attendance)
 	}
 	return
 }
