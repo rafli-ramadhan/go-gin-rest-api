@@ -55,13 +55,13 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 		return
 	}
 
-	locationIDsStrArr := strings.Split(locationIDsStr, ",")
+	locationIDsString := strings.Split(locationIDsStr, ",")
 	var locationIDs []int
-	for i := range locationIDsStrArr {
-	    locationID, err := strconv.Atoi(locationIDsStrArr[i])
+	for i := range locationIDsString {
+	    locationID, err := strconv.Atoi(locationIDsString[i])
 	    if err != nil {
 		    rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
-			    "location_id": fmt.Sprintf(constant.ErrInvalidID.Error() + " : " + locationIDsStrArr[i])})
+			    "location_id": fmt.Sprintf(constant.ErrInvalidID.Error() + " : " + locationIDsString[i])})
 		    return
 	    }
 		locationIDs = append(locationIDs, locationID)

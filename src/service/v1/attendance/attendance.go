@@ -8,6 +8,7 @@ import (
 	"go-rest-api/src/constant"
 	"go-rest-api/src/http"
 	"go-rest-api/src/model"
+	"go-rest-api/src/pkg/pagination"
 	"go-rest-api/src/repository/v1/attendance"
 	"go-rest-api/src/service/v1/account"
 	"go-rest-api/src/service/v1/location"
@@ -32,12 +33,12 @@ func NewService(
 }
 
 type Servicer interface {
-	Find(accountID int) (responses []http.GetAttendance, err error)
-	FindByLocation(accountID int) (responses []http.GetAttendanceByLocation, err error)
+	Find(accountID int, pgn pagination.Pagination) (responses []http.GetAttendance, err error)
+	FindByLocation(accountID int, pgn pagination.Pagination) (responses []http.GetAttendanceByLocation, err error)
 	Add(accountID int, request http.AddAttendance) (err error)
 }
 
-func (svc *Service) Find(accountID int) (responses []http.GetAttendance, err error) {
+func (svc *Service) Find(accountID int, pgn pagination.Pagination) (responses []http.GetAttendance, err error) {
 	accountExist, err := svc.account.CheckAccountByID(accountID)
 	if err != nil {
 		err = errors.Wrap(err, "check account by id")
@@ -48,7 +49,7 @@ func (svc *Service) Find(accountID int) (responses []http.GetAttendance, err err
 		return
 	}
 
-	attendanceDatas, err := svc.repo.Find(accountID)
+	attendanceDatas, err := svc.repo.Find(accountID, pgn)
 	if err != nil {
 		err = errors.Wrap(err, "find attendance datas")
 		return
@@ -70,7 +71,7 @@ func (svc *Service) Find(accountID int) (responses []http.GetAttendance, err err
 	return
 }
 
-func (svc *Service) FindByLocation(accountID int) (responses []http.GetAttendanceByLocation, err error) {
+func (svc *Service) FindByLocation(accountID int, pgn pagination.Pagination) (responses []http.GetAttendanceByLocation, err error) {
 	accountExist, err := svc.account.CheckAccountByID(accountID)
 	if err != nil {
 		err = errors.Wrap(err, "check account by id")
@@ -81,7 +82,7 @@ func (svc *Service) FindByLocation(accountID int) (responses []http.GetAttendanc
 		return
 	}
 
-	attendanceDatas, err := svc.repo.Find(accountID)
+	attendanceDatas, err := svc.repo.Find(accountID, pgn)
 	if err != nil {
 		err = errors.Wrap(err, "find attendance datas")
 		return

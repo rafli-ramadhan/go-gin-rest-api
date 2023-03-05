@@ -3,10 +3,12 @@ package attendance
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"go-rest-api/src/constant"
 	entity "go-rest-api/src/http"
 	"go-rest-api/src/pkg/jwt"
+	"go-rest-api/src/pkg/pagination"
 	"go-rest-api/src/service/v1/attendance"
 
 	"github.com/forkyid/go-utils/v1/rest"
@@ -32,6 +34,8 @@ func NewController(
 // @Tags Attendance 
 // @Produce application/json
 // @Param Authorization header string true "Bearer Token"
+// @Param Limit query int false "limit"
+// @Param Page query int false "page"
 // @Success 200 {object} http.GetAttendance
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
@@ -44,7 +48,41 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 		return
 	}
 
-	response, err := ctrl.svc.Find(accountID)
+	limitString := ctx.Query("Limit")
+	limit, err := strconv.Atoi(limitString)
+	if err != nil {
+		log.Print(err)
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"limit": constant.ErrInvalidFormat.Error()})
+		return
+	}
+	limit = int(limit)
+	pageString := ctx.Query("Page")
+	page, err := strconv.Atoi(pageString)
+	if err != nil {
+		log.Print(err)
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"page": constant.ErrInvalidFormat.Error()})
+		return
+	}
+	page = int(page)
+	if limit < 0 || limit == 0 {
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"limit": constant.ErrInvalidFormat.Error()})
+		return
+	}
+	if page < 0 || page == 0 {
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"page": constant.ErrInvalidFormat.Error()})
+		return
+	}
+	pgn := pagination.Pagination{
+		Limit:  limit,
+		Page:   page,
+	}
+	pgn.Paginate()
+
+	response, err := ctrl.svc.Find(accountID, pgn)
 	if err != nil {
 		if errors.Is(err, constant.ErrAccountNotRegistered) {
 			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
@@ -64,6 +102,8 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 // @Tags Attendance 
 // @Produce application/json
 // @Param Authorization header string true "Bearer Token"
+// @Param Limit query string false "limit"
+// @Param Page query string false "page"
 // @Success 200 {object} http.GetAttendanceByLocation
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
@@ -76,7 +116,41 @@ func (ctrl *Controller) GetByLocation(ctx *gin.Context) {
 		return
 	}
 
-	response, err := ctrl.svc.FindByLocation(accountID)
+	limitString := ctx.Query("Limit")
+	limit, err := strconv.Atoi(limitString)
+	if err != nil {
+		log.Print(err)
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"limit": constant.ErrInvalidFormat.Error()})
+		return
+	}
+	limit = int(limit)
+	pageString := ctx.Query("Page")
+	page, err := strconv.Atoi(pageString)
+	if err != nil {
+		log.Print(err)
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"page": constant.ErrInvalidFormat.Error()})
+		return
+	}
+	page = int(page)
+	if limit < 0 || limit == 0 {
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"limit": constant.ErrInvalidFormat.Error()})
+		return
+	}
+	if page < 0 || page == 0 {
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"page": constant.ErrInvalidFormat.Error()})
+		return
+	}
+	pgn := pagination.Pagination{
+		Limit:  limit,
+		Page:   page,
+	}
+	pgn.Paginate()
+
+	response, err := ctrl.svc.FindByLocation(accountID, pgn)
 	if err != nil {
 		if errors.Is(err, constant.ErrAccountNotRegistered) {
 			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
