@@ -17,15 +17,15 @@ type RegisterUser struct {
 }
 
 type UpdateUser struct {
-	Username       string  `json:"username"`
-	FullName       string  `json:"fullname"`
+	Username       *string `json:"username"`
+	FullName       *string `json:"fullname"`
 	Email          *string `json:"email"`
-	Password       string  `json:"password"`
+	Password       *string `json:"password"`
 	Address        *string `json:"address"`
 	EmployeeNumber *string `json:"employee_number"`
 	JobPosition    *string `json:"job_position"`
 	KTPNumber      *int    `json:"ktp_number"`
 	PhoneNumber    *string `json:"phone_number"`
-	Gender         string  `json:"gender"`
-	DOBString      string  `json:"date_of_birth" example:"dd/mm/yyyy"`
+	Gender         *string `json:"gender"`
+	DOBString      *string `json:"date_of_birth" example:"yyyy-mm-dd"`
 }

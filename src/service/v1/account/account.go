@@ -2,6 +2,7 @@ package account
 
 import (
 	"log"
+	"time"
 
 	"github.com/forkyid/go-utils/v1/aes"
 	"github.com/jinzhu/copier"
@@ -222,12 +223,17 @@ func (svc *Service) Update(accountID int, request http.UpdateUser) (err error) {
 		return
 	}
 
-	if request.Username != "" {
-	    usernameExist, _ := svc.CheckAccountByUsername(request.Username)
-	    if usernameExist {
-		    err = constant.ErrUsernameAlreadyExist
-		    return
-	    }
+	if request.Username != nil {
+		if *request.Username == "" {
+			err = constant.ErrUsernameCannotBeEmpty
+			return
+		} else {
+			usernameExist, _ := svc.CheckAccountByUsername(*request.Username)
+			if usernameExist {
+				err = constant.ErrUsernameAlreadyExist
+				return
+			}
+		}
 	}
 
 	if request.Email != nil {
@@ -246,13 +252,18 @@ func (svc *Service) Update(accountID int, request http.UpdateUser) (err error) {
 	    }
 	}
 
-	if request.Password != "" {
-		hashedNewPassword, err := bcrypt.HashPassword(request.Password)
-	    if err != nil {
-		    err = errors.Wrap(err, "hash new password")
-		    return err
-	    }
-		request.Password = hashedNewPassword
+	if request.Password != nil {
+		if *request.Password == "" {
+			err = constant.ErrPasswordCannotBeEmpty
+			return
+		} else {
+			hashedNewPassword, err := bcrypt.HashPassword(*request.Password)
+			if err != nil {
+				err = errors.Wrap(err, "hash new password")
+				return err
+			}
+			request.Password = &hashedNewPassword
+		}
 	}
 
 	if request.PhoneNumber != nil {
@@ -267,6 +278,14 @@ func (svc *Service) Update(accountID int, request http.UpdateUser) (err error) {
 	copier.Copy(&account, &request)
 	if request.KTPNumber != nil {
 	    *account.KTPNumber = aes.Encrypt(*request.KTPNumber)
+	}
+	if request.DOBString != nil {
+		DOBString, err := time.Parse(constant.DOBFormat, *request.DOBString)
+		if err != nil {
+			err = constant.ErrInvalidDOBFormat
+			return err
+		}
+		account.DateOfBirth = DOBString
 	}
 
 	err = svc.repo.Update(accountID, account)

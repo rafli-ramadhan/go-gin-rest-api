@@ -9,7 +9,6 @@ import (
 	"go-rest-api/src/pkg/jwt"
 	entity "go-rest-api/src/http"
 	"go-rest-api/src/service/v1/account"
-	// "github.com/forkyid/go-utils/v1/aes"
 	"github.com/forkyid/go-utils/v1/rest"
 	"github.com/forkyid/go-utils/v1/validation"
 	"github.com/gin-gonic/gin"
@@ -97,6 +96,7 @@ func (ctrl *Controller) Register(ctx *gin.Context) {
 // @Summary Update Account
 // @Description Update Account
 // @Tags Accounts
+// @Param Authorization header string true "Bearer Token"
 // @Param Payload body http.UpdateUser true "Payload"
 // @Success 200 {string} string "Success"
 // @Failure 400 {string} string "Bad Request"
@@ -132,6 +132,14 @@ func (ctrl *Controller) Update(ctx *gin.Context) {
 			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
 				"accounts": constant.ErrAccountNotRegistered.Error()})
 			return
+		} else if errors.Is(err, constant.ErrUsernameCannotBeEmpty) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrUsernameCannotBeEmpty.Error()})
+			return
+		} else if errors.Is(err, constant.ErrPasswordCannotBeEmpty) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrPasswordCannotBeEmpty.Error()})
+			return
 		} else if errors.Is(err, constant.ErrUsernameAlreadyExist) {
 			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
 				"accounts": constant.ErrUsernameAlreadyExist.Error()})
@@ -147,6 +155,10 @@ func (ctrl *Controller) Update(ctx *gin.Context) {
 		} else if errors.Is(err, constant.ErrPhoneNumberAlreadyExist) {
 			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
 				"accounts": constant.ErrPhoneNumberAlreadyExist.Error()})
+			return
+		} else if errors.Is(err, constant.ErrInvalidDOBFormat) {
+			rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+				"accounts": constant.ErrInvalidDOBFormat.Error()})
 			return
 		}
 		rest.ResponseMessage(ctx, http.StatusInternalServerError)

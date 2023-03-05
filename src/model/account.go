@@ -1,7 +1,6 @@
 package model
 
 import (
-	"go-rest-api/src/constant"
 	"gorm.io/gorm"
 	"time"
 )
@@ -25,8 +24,4 @@ type Account struct {
 
 func (Account) TableName() string {
 	return "accounts"
-}
-
-func (m Account) DOBString() string {
-	return m.DateOfBirth.Format(constant.DOBLayout)
 }
