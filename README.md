@@ -62,12 +62,6 @@ http://localhost:5000/swagger/index.html#/
 ![1](/images/1.png)
 ![2](/images/2.png)
 
-### Docker
-
-```bash
-docker-compose up --build
-```
-
 ## Repository Structure
 
 ```bash
