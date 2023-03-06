@@ -61,15 +61,15 @@ func (svc *Service) FindAttendanceHistory(accountID int, pgn pagination.Paginati
 		now := time.Now()
 		for i := range attendanceDatas {
 			if filter == constant.FilterByDay {
-				if attendanceDatas[i].CreatedAt.Year() != now.Year() && attendanceDatas[i].CreatedAt.Day() != now.Day() {
+				if attendanceDatas[i].CreatedAt.Year() != now.Year() || attendanceDatas[i].CreatedAt.Month() != now.Month() || attendanceDatas[i].CreatedAt.Day() != now.Day() {
 					continue
 				}
 			} else if filter == constant.FilterByWeek {
-				if attendanceDatas[i].CreatedAt.Year() != now.Year() && attendanceDatas[i].CreatedAt.Month() != now.Month() && now.Day() - attendanceDatas[i].CreatedAt.Day() > 7 {
+				if attendanceDatas[i].CreatedAt.Year() != now.Year() || attendanceDatas[i].CreatedAt.Month() != now.Month() || now.Day() - attendanceDatas[i].CreatedAt.Day() > 7 {
 					continue
 				}
 			} else if filter == constant.FilterByMonth {
-				if attendanceDatas[i].CreatedAt.Year() != now.Year() && attendanceDatas[i].CreatedAt.Month() != now.Month() {
+				if attendanceDatas[i].CreatedAt.Year() != now.Year() || attendanceDatas[i].CreatedAt.Month() != now.Month() {
 					continue
 				}
 			}
