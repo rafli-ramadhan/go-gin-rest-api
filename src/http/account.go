@@ -1,13 +1,14 @@
 package http
 
 type GetUser struct {
-	ID             string  `json:"id"`
-	Username       string  `json:"username"`
-	FullName       string  `json:"fullname"`
-	Email          string  `json:"email"`
-	EmployeeNumber string  `json:"employee_number"`
-	JobPosition    string  `json:"job_position"`
-	PhotoURL       string  `json:"photo_url"`
+	ID             string `json:"id"`
+	Username       string `json:"username"`
+	FullName       string `json:"fullname"`
+	Email          string `json:"email"`
+	EmployeeNumber string `json:"employee_number"`
+	Address        string `json:"address"`
+	JobPosition    string `json:"job_position"`
+	PhotoURL       string `json:"photo_url"`
 }
 
 type RegisterUser struct {
