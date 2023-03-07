@@ -34,9 +34,9 @@ func NewController(
 // @Tags Attendance 
 // @Produce application/json
 // @Param Authorization header string true "Bearer Token"
-// @Param Limit query string true "limit"
 // @Param Page query string true "page"
-// @Param Filter query string true "string enums" Enums(day, week, month)
+// @Param Limit query string true "limit"
+// @Param Filter query string true "string enums" Enums(day, week, month, year)
 // @Success 200 {object} http.GetAttendance
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
@@ -85,7 +85,7 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 
 	filter := ctx.Query("Filter")
 	log.Print(filter)
-	if filter != constant.FilterByDay && filter != constant.FilterByWeek && filter != constant.FilterByMonth {
+	if filter != constant.FilterByDay && filter != constant.FilterByWeek && filter != constant.FilterByMonth && filter != constant.FilterByYear {
 		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
 			"filter": constant.ErrInvalidFormat.Error()})
 		return
@@ -111,8 +111,8 @@ func (ctrl *Controller) Get(ctx *gin.Context) {
 // @Tags Attendance 
 // @Produce application/json
 // @Param Authorization header string true "Bearer Token"
-// @Param Limit query string true "limit"
 // @Param Page query string true "page"
+// @Param Limit query string true "limit"
 // @Success 200 {object} http.GetAttendanceByLocation
 // @Failure 400 {string} string "Bad Request"
 // @Failure 401 {string} string "Unauthorized"
@@ -177,7 +177,8 @@ func (ctrl *Controller) GetByLocation(ctx *gin.Context) {
 // Create godoc
 // @Summary Add Attendance
 // @Description Add Attendance
-// @Tags Attendance 
+// @Tags Attendance
+// @Param Authorization header string true "Bearer Token"
 // @Param Payload body http.AddAttendance true "Payload"
 // @Success 201 {object} string "Created"
 // @Failure 400 {string} string "Bad Request"
@@ -209,7 +210,12 @@ func (ctrl *Controller) Add(ctx *gin.Context) {
 	if errors.Is(err, constant.ErrAccountNotRegistered) {
 		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
 			"account_id": constant.ErrAccountNotRegistered.Error()})
-		return
+	} else if errors.Is(err, constant.ErrLocationNotExist) {
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"location": constant.ErrLocationNotExist.Error()})
+	} else if errors.Is(err, constant.ErrInvalidStatusAttendance) {
+		rest.ResponseError(ctx, http.StatusBadRequest, map[string]string{
+			"status": constant.ErrInvalidStatusAttendance.Error()})
 	} else if err != nil {
 		log.Println("attendance name:", err.Error())
 		rest.ResponseMessage(ctx, http.StatusInternalServerError)

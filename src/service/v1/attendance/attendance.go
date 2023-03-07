@@ -59,17 +59,25 @@ func (svc *Service) FindAttendanceHistory(accountID int, pgn pagination.Paginati
 
 	if len(attendanceDatas) != 0 {
 		now := time.Now()
+		loc, err := time.LoadLocation("Asia/Jakarta")
+		if err != nil {
+			panic(err)
+		}
 		for i := range attendanceDatas {
 			if filter == constant.FilterByDay {
-				if attendanceDatas[i].CreatedAt.Year() != now.Year() || attendanceDatas[i].CreatedAt.Month() != now.Month() || attendanceDatas[i].CreatedAt.Day() != now.Day() {
+				if attendanceDatas[i].CreatedAt.In(loc).Year() != now.In(loc).Year() || attendanceDatas[i].CreatedAt.In(loc).Month() != now.In(loc).Month() || attendanceDatas[i].CreatedAt.In(loc).Day() != now.In(loc).Day() {
 					continue
 				}
 			} else if filter == constant.FilterByWeek {
-				if attendanceDatas[i].CreatedAt.Year() != now.Year() || attendanceDatas[i].CreatedAt.Month() != now.Month() || now.Day() - attendanceDatas[i].CreatedAt.Day() > 7 {
+				if attendanceDatas[i].CreatedAt.In(loc).Year() != now.In(loc).Year() || attendanceDatas[i].CreatedAt.In(loc).Month() != now.In(loc).Month() || now.In(loc).Day() - attendanceDatas[i].CreatedAt.In(loc).Day() > 7 {
 					continue
 				}
 			} else if filter == constant.FilterByMonth {
-				if attendanceDatas[i].CreatedAt.Year() != now.Year() || attendanceDatas[i].CreatedAt.Month() != now.Month() {
+				if attendanceDatas[i].CreatedAt.In(loc).Year() != now.In(loc).Year() || attendanceDatas[i].CreatedAt.In(loc).Month() != now.In(loc).Month() {
+					continue
+				}
+			} else if filter == constant.FilterByYear {
+				if attendanceDatas[i].CreatedAt.In(loc).Year() != now.In(loc).Year() {
 					continue
 				}
 			}
@@ -83,12 +91,13 @@ func (svc *Service) FindAttendanceHistory(accountID int, pgn pagination.Paginati
 			attendance.LocationID = attendanceDatas[i].LocationID
 			attendance.LocationName = location.LocationName
 			attendance.Status = attendanceDatas[i].Status
-			attendance.Time = attendanceDatas[i].CreatedAt.Format("03:04 PM")
+			attendance.Time = attendanceDatas[i].CreatedAt.In(loc).Format("03:04 PM")
 			if attendanceDatas[i].Status == constant.StatusCheckIn {
-				attendance.Description = fmt.Sprintf("Check In - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.Format("03:04 PM"))
+				attendance.Description = fmt.Sprintf("Check In - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.In(loc).Format("03:04 PM"))
 			} else {
-				attendance.Description = fmt.Sprintf("Check Out - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.Format("03:04 PM"))
+				attendance.Description = fmt.Sprintf("Check Out - %s - %v", location.LocationName, attendanceDatas[i].CreatedAt.In(loc).Format("03:04 PM"))
 			}
+
 			responses = append(responses, attendance)
 		}
 	}
@@ -158,16 +167,22 @@ func (svc *Service) Add(accountID int, request http.AddAttendance) (err error) {
 		return
 	}
 
-	newAttendance := model.Attendance{}
-	copier.Copy(&newAttendance, &request)
-	newAttendance.AccountID = accountID
-	newAttendance.CreatedAt = time.Now().UTC()
-	newAttendance.UpdatedAt = time.Now().UTC()
+	status := request.Status
+	if status == constant.StatusCheckIn || status == constant.StatusCheckOut {
+		newAttendance := model.Attendance{}
+		copier.Copy(&newAttendance, &request)
+		newAttendance.AccountID = accountID
+		newAttendance.CreatedAt = time.Now().UTC()
+		newAttendance.UpdatedAt = time.Now().UTC()
 
-	err = svc.repo.Create(accountID, newAttendance)
-	if err != nil {
-		err = errors.Wrap(err, "create new attendance")
-		return err
+		err = svc.repo.Create(accountID, newAttendance)
+		if err != nil {
+			err = errors.Wrap(err, "create new attendance")
+			return
+		}
+	} else {
+		err = constant.ErrInvalidStatusAttendance
+		return
 	}
 	return
 }

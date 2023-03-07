@@ -14,6 +14,7 @@ const (
 	FilterByDay                = "day"
 	FilterByWeek               = "week"
 	FilterByMonth              = "month"
+	FilterByYear               = "year"
 	StatusCheckIn              = "check-in"
 	StatusCheckOut             = "check-out"
 )
@@ -33,6 +34,7 @@ var (
 	ErrInvalidDOBFormat         = errors.New("invalid dob format, example : '2006-01-02'")
 	ErrInvalidLocationName      = errors.New("invalid location")
 	ErrInvalidPassword          = errors.New("invalid password")
+	ErrInvalidStatusAttendance  = errors.New("invalid status attendance")
 	ErrAccountExist             = errors.New("account already exist")
 	ErrAccountNotRegistered     = errors.New("account not registered")
 	ErrEmailAlreadyExist        = errors.New("email already exist")
