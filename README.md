@@ -13,13 +13,6 @@ Requirement :
 go mod download && go mod tidy && go mod verify
 ```
 
-If the message below was shown, do the next step.
-```
-go: finding module for package github.com/forkyid/go-rest-api/docs
-github.com/forkyid/go-rest-api/src/route imports
-        github.com/forkyid/go-rest-api/docs: no matching versions for query "latest"
-```
-
 ## Swagger Installation and Swag Initialization
 
 ```bash
